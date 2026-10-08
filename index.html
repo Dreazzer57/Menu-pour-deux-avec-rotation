@@ -45,6 +45,8 @@ body{
   padding-bottom:80px;
 }
 button{font-family:inherit;cursor:pointer}
+/* Interaction safeguards : aucun élément décoratif ne doit bloquer les contrôles */
+nav, nav button, .day-head, .meal input[type="checkbox"], [data-suivi]{pointer-events:auto}
 :focus-visible{outline:2px solid var(--green);outline-offset:2px}
 
 /* ==========================================================
@@ -875,7 +877,8 @@ function mealHTML(w,d,m,id){
     return `
   <div class="meal ${checked?'checked':''}" id="card-${key}">
     <input type="checkbox" data-key="${key}" data-w="${w}" data-d="${d}" ${checked}
-           aria-label="Marquer ${TYPES[m]} comme terminé">
+           aria-label="Marquer ${TYPES[m]} comme terminé"
+           onclick="event.stopPropagation()" onchange="toggleRepas(this)">
     <div class="meal-info">
       <div class="meal-type">${TYPES[m]}</div>
       <div class="who qr">Raph</div>
@@ -897,7 +900,8 @@ function mealHTML(w,d,m,id){
     return `
   <div class="meal ${checked?'checked':''}" id="card-${key}">
     <input type="checkbox" data-key="${key}" data-w="${w}" data-d="${d}" ${checked}
-           aria-label="Marquer ${TYPES[m]} comme terminé">
+           aria-label="Marquer ${TYPES[m]} comme terminé"
+           onclick="event.stopPropagation()" onchange="toggleRepas(this)">
     <div class="meal-info">
       <div class="meal-type">${TYPES[m]}</div>
       <div class="who qr">Raph</div>
@@ -915,7 +919,8 @@ function mealHTML(w,d,m,id){
   return `
   <div class="meal ${checked?'checked':''}" id="card-${key}">
     <input type="checkbox" data-key="${key}" data-w="${w}" data-d="${d}" ${checked}
-           aria-label="Marquer ${TYPES[m]} comme terminé">
+           aria-label="Marquer ${TYPES[m]} comme terminé"
+           onclick="event.stopPropagation()" onchange="toggleRepas(this)">
     <div class="meal-info">
       <div class="meal-type">${TYPES[m]}</div>
       <div class="meal-name">${meal.nom}</div>
@@ -940,7 +945,7 @@ function pageSemaine(w){
     const kjR = kcalJour(meals,F,"raph",d), kjH = kcalJour(meals,FA,"h",d);
     html += `
     <div class="day ${hb?'handball':''}" id="day-${w}-${d}">
-      <button class="day-head" data-toggle="${w}-${d}" aria-expanded="false">
+      <button type="button" class="day-head" data-toggle="${w}-${d}" aria-expanded="false" onclick="toggleDay(this)">
         <span class="day-name">${JOURS[d]}${hb?'<span class="badge-hb">🤾 Handball</span>':''}</span>
         <span class="kcal"><span class="qr">Raph ≈${kjR} kcal</span><span class="qh">Hannah ≈${kjH} kcal</span>${meals.includes("l_plaisir")?"<span>+ 🎉 repas plaisir</span>":""}</span>
         <span class="chev">▼</span>
@@ -1030,9 +1035,9 @@ function tableSuivi(qui,label,placeholder){
     const s = state.suivi[qui][w] || {};
     rows += `<tr>
       <td><b>S${w+1}</b></td>
-      <td><input type="number" step="0.1" min="0" placeholder="kg" data-suivi="poids" data-qui="${qui}" data-w="${w}" value="${s.poids??""}"></td>
-      <td><input type="number" step="0.5" min="0" placeholder="cm" data-suivi="taille" data-qui="${qui}" data-w="${w}" value="${s.taille??""}"></td>
-      <td><input type="text" placeholder="${placeholder}" data-suivi="note" data-qui="${qui}" data-w="${w}" value="${s.note??""}"></td>
+      <td><input type="number" step="0.1" min="0" placeholder="kg" data-suivi="poids" data-qui="${qui}" data-w="${w}" value="${s.poids??""}" oninput="majChampSuivi(this); majSuivi()" onchange="majChampSuivi(this); majSuivi()"></td>
+      <td><input type="number" step="0.5" min="0" placeholder="cm" data-suivi="taille" data-qui="${qui}" data-w="${w}" value="${s.taille??""}" oninput="majChampSuivi(this); majSuivi()" onchange="majChampSuivi(this); majSuivi()"></td>
+      <td><input type="text" placeholder="${placeholder}" data-suivi="note" data-qui="${qui}" data-w="${w}" value="${s.note??""}" oninput="majChampSuivi(this); majSuivi()" onchange="majChampSuivi(this); majSuivi()"></td>
     </tr>`;
   }
   return `<h2 style="margin-top:8px">${label}</h2>
@@ -1051,12 +1056,31 @@ function pageSuivi(){
 }
 
 /* ==========================================================
+   NAVIGATION ROBUSTE
+   ========================================================== */
+function afficherPage(id, btn){
+  const page = document.getElementById("page-" + id);
+  if(!page) return;
+  nav.querySelectorAll("button").forEach(b => {
+    b.classList.toggle("active", b === btn);
+    b.setAttribute("aria-selected", b === btn ? "true" : "false");
+  });
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("visible"));
+  page.classList.add("visible");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ==========================================================
    CONSTRUCTION DU DOM
    ========================================================== */
 PAGES.forEach((p,i)=>{
   const b = document.createElement("button");
   b.textContent = p.label;
   b.dataset.page = p.id;
+  b.type = "button";
+  b.setAttribute("aria-controls", "page-" + p.id);
+  b.setAttribute("aria-selected", i===0 ? "true" : "false");
+  b.onclick = () => afficherPage(p.id, b);
   if(i===0) b.classList.add("active");
   nav.appendChild(b);
 
@@ -1077,14 +1101,12 @@ document.getElementById("page-suivi").innerHTML = pageSuivi();
    INTERACTIONS
    ========================================================== */
 
-/* Navigation entre onglets */
+/* Navigation : les boutons possèdent leur propre handler onclick.
+   Ce listener reste un filet de sécurité pour les interactions ajoutées dynamiquement. */
 nav.addEventListener("click",e=>{
-  const btn = e.target.closest("button");
+  const btn = e.target.closest("button[data-page]");
   if(!btn) return;
-  nav.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===btn));
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("visible"));
-  document.getElementById("page-"+btn.dataset.page).classList.add("visible");
-  window.scrollTo({top:0});
+  afficherPage(btn.dataset.page, btn);
 });
 
 /* Re-génère toutes les pages (rotation ou portions modifiées) */
@@ -1094,7 +1116,10 @@ function rerenderAll(){
   for(let w=0; w<4; w++) document.getElementById("page-s"+w).innerHTML = pageSemaine(w);
   document.getElementById("page-rotations").innerHTML = pageRotations();
   document.getElementById("page-courses").innerHTML = pageCourses();
+  document.getElementById("page-batch").innerHTML = pageBatch();
+  document.getElementById("page-suivi").innerHTML = pageSuivi();
   for(let w=0;w<4;w++) for(let d=0;d<7;d++) refresh(w,d);
+  majSuivi();
 }
 
 /* Objectif kcal / jour : mise à jour des portions */
@@ -1124,30 +1149,35 @@ main.addEventListener("click",e=>{
 });
 
 /* Accordéon des jours */
-main.addEventListener("click",e=>{
-  const head = e.target.closest("[data-toggle]");
+function toggleDay(head){
   if(!head) return;
-  const day = head.parentElement;
+  const day = head.closest(".day");
+  if(!day) return;
   const body = day.querySelector(".day-body");
+  if(!body) return;
   const open = day.classList.toggle("open");
-  head.setAttribute("aria-expanded", open);
+  head.setAttribute("aria-expanded", open ? "true" : "false");
   body.style.maxHeight = open ? body.scrollHeight + "px" : "0";
-});
+}
+/* Les boutons .day-head utilisent directement onclick="toggleDay(this)". */
+
 
 /* Cases à cocher des repas + champs du suivi */
+function toggleRepas(el){
+  if(!el || !el.matches("input[type=checkbox][data-key]")) return;
+  const key = el.dataset.key;
+  if(el.checked) state.checks[key] = true;
+  else delete state.checks[key];
+  const card = document.getElementById("card-"+key);
+  if(card) card.classList.toggle("checked", el.checked);
+  save();
+  refresh(+el.dataset.w, +el.dataset.d);
+  const body = el.closest(".day-body");
+  if(body && body.parentElement.classList.contains("open"))
+    body.style.maxHeight = body.scrollHeight + "px";
+}
 main.addEventListener("change",e=>{
   const el = e.target;
-  if(el.matches("input[type=checkbox][data-key]")){
-    const key = el.dataset.key;
-    if(el.checked) state.checks[key] = true;
-    else delete state.checks[key];
-    document.getElementById("card-"+key).classList.toggle("checked", el.checked);
-    save();
-    refresh(+el.dataset.w, +el.dataset.d);
-    const body = el.closest(".day-body");
-    if(body && body.parentElement.classList.contains("open"))
-      body.style.maxHeight = body.scrollHeight + "px";
-  }
   if(el.matches("[data-suivi]")){
     majChampSuivi(el);
     majSuivi();
@@ -1174,21 +1204,29 @@ function compteJour(w,d){
 }
 function refresh(w,d){
   const dj = compteJour(w,d);
-  document.getElementById(`dbar-${w}-${d}`).style.width = (dj/4*100)+"%";
-  document.getElementById(`dmsg-${w}-${d}`).classList.toggle("on", dj===4);
-  document.getElementById(`day-${w}-${d}`).classList.toggle("done", dj===4);
+  const dbar = document.getElementById(`dbar-${w}-${d}`);
+  const dmsg = document.getElementById(`dmsg-${w}-${d}`);
+  const day = document.getElementById(`day-${w}-${d}`);
+  if(dbar) dbar.style.width = (dj/4*100)+"%";
+  if(dmsg) dmsg.classList.toggle("on", dj===4);
+  if(day) day.classList.toggle("done", dj===4);
 
   let ws = 0;
   for(let j=0;j<7;j++) ws += compteJour(w,j);
   const wpct = Math.round(ws/28*100);
-  document.getElementById(`wbar-${w}`).style.width = wpct+"%";
-  document.getElementById(`wpct-${w}`).textContent = wpct+" %";
-  document.getElementById(`wmsg-${w}`).classList.toggle("on", ws===28);
+  const wbar = document.getElementById(`wbar-${w}`);
+  const wpctEl = document.getElementById(`wpct-${w}`);
+  const wmsg = document.getElementById(`wmsg-${w}`);
+  if(wbar) wbar.style.width = wpct+"%";
+  if(wpctEl) wpctEl.textContent = wpct+" %";
+  if(wmsg) wmsg.classList.toggle("on", ws===28);
 
   const total = Object.keys(state.checks).length;
   const gpct = Math.round(total/112*100);
-  document.getElementById("globalBar").style.width = gpct+"%";
-  document.getElementById("globalPct").textContent = gpct+" %";
+  const globalBar = document.getElementById("globalBar");
+  const globalPct = document.getElementById("globalPct");
+  if(globalBar) globalBar.style.width = gpct+"%";
+  if(globalPct) globalPct.textContent = gpct+" %";
 }
 
 /* Statistiques du suivi (perte pour chacun) */
