@@ -363,16 +363,16 @@ td input:focus{border-color:var(--green);outline:none}
 const MEALS = {
   /* --- Petits-déjeuners (selon le jour) --- */
   pdj_lun:{nom:"Petits suisses, muesli et fraises",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Muesli sans avoine","30 g","muesli",30],["Fraises","100 g","fraises",100],["Miel","1 c. à café","miel",1]],kcal:330,prot:15,tps:"3 min",note:"Tout mélanger dans un bol."},
-  pdj_mar:{nom:"Tartine jambon de dinde, tomate & petit suisse",ing:[["Pain complet","1 tranche (40 g)","pain",40],["Jambon de dinde","3 tranches","jambon",3],["Tomate","120 g (1 tomate)","tomates",120],["Petit suisse","60 g (1 pot)","psuisse",60]],kcal:270,prot:26,tps:"3 min",note:"Tomate en rondelles sur le pain."},
+  pdj_mar:{nom:"Tartine jambon de dinde, tomate & petit suisse",ing:[["Pain complet","1 tranche (40 g)","pain",40],["Jambon de dinde","3 tranches","jambon_dinde",3],["Tomate","120 g (1 tomate)","tomates",120],["Petit suisse","60 g (1 pot)","psuisse",60]],kcal:270,prot:26,tps:"3 min",note:"Tomate en rondelles sur le pain."},
   pdj_mer:{nom:"Bol muesli, petits suisses et banane",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Muesli sans avoine","30 g","muesli",30],["Banane","1/2","banane",0.5],["Myrtilles","30 g","myrtilles",30]],kcal:345,prot:16,tps:"3 min"},
-  pdj_jeu:{nom:"Tartine petits suisses et jambon de poulet",ing:[["Pain complet","2 tranches (80 g)","pain",80],["Petits suisses","60 g (1 pot)","psuisse",60],["Jambon de poulet","2 tranches","jambon",2],["Concombre","100 g","concombre",100]],kcal:335,prot:24,tps:"3 min",note:"Petit suisse battu en guise de beurre."},
+  pdj_jeu:{nom:"Tartine petits suisses et jambon de dinde",ing:[["Pain complet","2 tranches (80 g)","pain",80],["Petits suisses","60 g (1 pot)","psuisse",60],["Jambon de dinde","2 tranches","jambon_dinde",2],["Concombre","100 g","concombre",100]],kcal:335,prot:24,tps:"3 min",note:"Petit suisse battu en guise de beurre."},
   pdj_ven:{nom:"Petits suisses, fruits rouges et muesli",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Fraises","80 g","fraises",80],["Myrtilles","50 g","myrtilles",50],["Muesli sans avoine","30 g","muesli",30]],kcal:330,prot:16,tps:"3 min"},
-  pdj_sam:{nom:"Pain complet, jambon de dinde, petit suisse & orange pressée",ing:[["Pain complet","1 tranche (40 g)","pain",40],["Jambon de dinde","3 tranches","jambon",3],["Petit suisse","60 g (1 pot)","psuisse",60],["Orange à presser","1","orange",1]],kcal:310,prot:26,tps:"5 min"},
+  pdj_sam:{nom:"Pain complet, jambon de dinde, petit suisse & orange pressée",ing:[["Pain complet","1 tranche (40 g)","pain",40],["Jambon de dinde","3 tranches","jambon_dinde",3],["Petit suisse","60 g (1 pot)","psuisse",60],["Orange à presser","1","orange",1]],kcal:310,prot:26,tps:"5 min"},
   pdj_dim:{nom:"Bol petits suisses, muesli, fruits frais & miel",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Muesli sans avoine","30 g","muesli",30],["Fruits frais","100 g","fruits",100],["Miel","1 c. à café","miel",1]],kcal:350,prot:15,tps:"3 min",note:"Fruits frais sur le dessus."},
 
   /* --- Petits-déjeuners de Raph : alternance habituelle / tartines --- */
   pdj_raph:{nom:"Café, petits suisses, flocons d'avoine et muesli",ing:[["Café","1 tasse","cafe",1],["Miel (selon l'envie)","1 c. à café, parfois","miel",0.5],["Petits suisses","180 g (3 pots)","psuisse",180],["Flocons d'avoine","40 g","avoine",40],["Muesli","15 g","muesli",15]],kcal:415,prot:21,tps:"3 min",note:"Ton petit-déjeuner habituel.",fixe:true},
-  pdj_raph_tartines:{nom:"Café, pain complet, jambon & fromage frais",ing:[["Café","1 tasse","cafe",1],["Pain de mie complet","2 tranches (≈ 80 g)","pain",80],["Jambon","2 tranches","jambon",2],["Fromage frais à tartiner","1 carré (≈ 20 g)","fromage_frais",20]],kcal:305,prot:20,tps:"3 min",note:"2 tranches de pain de mie complet, 2 tranches de jambon et 1 carré de fromage frais à tartiner.",fixe:true},
+  pdj_raph_tartines:{nom:"Café, pain complet, jambon & fromage frais",ing:[["Café","1 tasse","cafe",1],["Pain de mie complet","2 tranches (≈ 80 g)","pain",80],["Jambon de porc","2 tranches","jambon_porc",2],["Fromage frais à tartiner","1 carré (≈ 20 g)","fromage_frais",20]],kcal:305,prot:20,tps:"3 min",note:"2 tranches de pain de mie complet, 2 tranches de jambon de porc et 1 carré de fromage frais à tartiner.",fixe:true},
 
   /* --- Collations (selon le jour) --- */
   col_lun:{nom:"Pomme et 6 amandes",ing:[["Pomme","1 (≈ 150 g)","pomme",1],["Amandes","6 (≈ 7 g)","amandes",7]],kcal:120,prot:2,tps:"2 min",note:"À croquer lentement, avec un grand verre d'eau."},
@@ -417,7 +417,8 @@ const CAT = {
   dinde:{nom:"Escalopes de dinde",rayon:"Boucherie / Volaille",u:"g",prix:10,kc:105,pr:22,sc:0.4},
   poulet:{nom:"Blanc de poulet",rayon:"Boucherie / Volaille",u:"g",prix:9,kc:110,pr:23,sc:0.4},
   steak:{nom:"Steak haché 5 %",rayon:"Boucherie / Volaille",u:"g",prix:11,kc:125,pr:20,sc:0.4},
-  jambon:{nom:"Jambon de dinde / poulet",rayon:"Boucherie / Volaille",u:"tr",prix:0.3,kc:28,pr:5.5,sc:0.4,fmt:"tranches"},
+  jambon_dinde:{nom:"Jambon de dinde",rayon:"Boucherie / Volaille",u:"tr",prix:0.3,kc:28,pr:5.5,sc:0.4,fmt:"tranches"},
+  jambon_porc:{nom:"Jambon de porc",rayon:"Boucherie / Charcuterie",u:"tr",prix:0.3,kc:28,pr:5.5,sc:0.4,fmt:"tranches"},
   thon:{nom:"Thon naturel (boîte ≈ 110 g)",rayon:"Épicerie",u:"boite",prix:1.4,kc:120,pr:27,sc:0.4,fmt:"boites"},
   pdt:{nom:"Pommes de terre",rayon:"Fruits & Légumes",u:"g",prix:1.6,kc:80,pr:2,sc:0.7},
   riz:{nom:"Riz basmati",rayon:"Épicerie",u:"g",prix:3,kc:350,pr:8,sc:1.6},
@@ -692,8 +693,12 @@ function buildListeSemaine(week){
   RAYONS.forEach(r=>liste[r].sort((a,b)=>a[0].localeCompare(b[0],"fr")));
   /* herbes fraîches : on liste les variétés réellement utilisées */
   const noms = new Set();
-  week.forEach((day,d)=>[BREAKFAST_ROT[d],day[1],COLLATION_ROT[d],day[3]].forEach(id=>
-    MEALS[id].ing.forEach(i=>{ if(i[2] && CAT[i[2]].u==="herb") noms.add(i[0].replace(/ frais$/,"").replace(/ fraîche$/,"").toLowerCase()); })));
+  week.forEach((day,d)=>{
+    const repas = [PDJ_RAPH_ROT[d], day[1], collationRaphId(d), day[3], BREAKFAST_ROT[d], COLLATION_ROT[d]];
+    repas.forEach(id=>{
+      MEALS[id].ing.forEach(i=>{ if(i[2] && CAT[i[2]].u==="herb") noms.add(i[0].replace(/ frais$/,"" ).replace(/ fraîche$/,"" ).toLowerCase()); });
+    });
+  });
   if(noms.size) liste["Fruits & Légumes"].push(["Herbes fraîches & gingembre", [...noms].join(", ")]);
   if(placard.size) liste["Épicerie"].push(["Fond de placard", [...placard].join(", ")]);
   RAYONS.forEach(r=>{ if(!liste[r].length) delete liste[r]; });
@@ -813,7 +818,7 @@ function pageAccueil(){
   <section class="card">
     <h2><span class="dot">●</span> Comment ça marche</h2>
     <p class="muted">
-      • <b>Petit-déjeuner</b> : Raph alterne son petit-déjeuner habituel (café, 3 petits suisses, flocons d'avoine, un peu de muesli) avec 2 tranches de pain de mie complet, 2 tranches de jambon, 1 carré de fromage frais et son café ; Hannah garde sa rotation habituelle.<br>
+      • <b>Petit-déjeuner</b> : Raph alterne son petit-déjeuner habituel (café, 3 petits suisses, flocons d'avoine, un peu de muesli) avec 2 tranches de pain de mie complet, 2 tranches de jambon de porc, 1 carré de fromage frais et son café ; Hannah garde sa rotation habituelle.<br>
       • <b>Collation de 16 h 30</b> : pour Raph, les jours avec petits suisses au petit-déjeuner = 1 fruit + 6 amandes ; les autres jours, la collation prévue au menu. Hannah garde sa rotation habituelle.<br>
       • <b>Poisson</b> : saumon, cabillaud et colin reviennent plusieurs fois par semaine, cuisinés le jour même.<br>
       • <b>Quantités en poids cru</b> : tout est pesé avant cuisson. Les légumes sont indiqués par personne (<b>/p</b>, par exemple 200 g/p).<br>
