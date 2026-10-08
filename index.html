@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Plan Alimentaire — 4 semaines</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1020">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Plan Alim.">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+/* ==========================================================
+   1. VARIABLES & RESET
+   ========================================================== */
+:root{
+  --bg:#0b1020;            /* fond très sombre bleuté */
+  --bg-soft:#111832;       /* fond des cartes */
+  --bg-softer:#182142;     /* survol / éléments internes */
+  --border:#232e55;
+  --txt:#e8ecf8;
+  --txt-dim:#98a3c7;
+  --green:#3ddc84;         /* progression / validé */
+  --green-dark:#123626;
+  --blue:#5b9dff;          /* jours handball */
+  --blue-dark:#12244a;
+  --orange:#ffb454;        /* avertissements */
+  --orange-dark:#3a2a10;
+  --radius:16px;
+  --shadow:0 8px 24px rgba(0,0,0,.45);
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(1000px 500px at 80% -10%,#16224a55,transparent),
+                   radial-gradient(800px 400px at -10% 30%,#0f2b2455,transparent);
+  color:var(--txt);
+  font-family:var(--font);
+  line-height:1.55;
+  min-height:100vh;
+  padding-bottom:80px;
+}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* ==========================================================
+   2. EN-TÊTE & NAVIGATION
+   ========================================================== */
+header{
+  padding:28px 16px 8px;
+  text-align:center;
+}
+header h1{
+  font-size:clamp(1.5rem,4vw,2.3rem);
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+header h1 span{color:var(--green)}
+header p{color:var(--txt-dim);font-size:.95rem;margin-top:4px}
+
+nav{
+  position:sticky;top:0;z-index:50;
+  display:flex;gap:8px;overflow-x:auto;
+  padding:12px 16px;
+  background:rgba(11,16,32,.85);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  scrollbar-width:none;
+}
+nav::-webkit-scrollbar{display:none}
+nav button{
+  flex:0 0 auto;
+  background:var(--bg-soft);
+  color:var(--txt-dim);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:8px 16px;
+  font-size:.9rem;font-weight:600;
+  transition:all .25s ease;
+}
+nav button:hover{color:var(--txt);border-color:var(--green)}
+nav button.active{
+  background:var(--green);color:#04120a;border-color:var(--green);
+  box-shadow:0 0 18px #3ddc8455;
+}
+
+main{max-width:900px;margin:0 auto;padding:20px 16px}
+.page{display:none;animation:fadeIn .35s ease}
+.page.visible{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ==========================================================
+   3. CARTES GÉNÉRIQUES
+   ========================================================== */
+.card{
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+  margin-bottom:16px;
+}
+.card h2{font-size:1.25rem;margin-bottom:12px}
+.card h2 .dot{color:var(--green)}
+.muted{color:var(--txt-dim);font-size:.9rem}
+
+/* Grille de stats (accueil) */
+.stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;margin-top:8px;
+}
+.stat{
+  background:var(--bg-softer);
+  border:1px solid var(--border);
+  border-radius:12px;padding:14px;text-align:center;
+  transition:transform .2s ease;
+}
+.stat:hover{transform:translateY(-3px)}
+.stat b{display:block;font-size:1.5rem;color:var(--green)}
+.stat.blue b{color:var(--blue)}
+.stat small{color:var(--txt-dim)}
+
+/* Avertissement */
+.warn{
+  background:var(--orange-dark);
+  border:1px solid var(--orange);
+  border-radius:12px;
+  color:var(--orange);
+  padding:12px 14px;font-size:.9rem;
+  margin-top:12px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+
+/* Badge handball */
+.badge-hb{
+  display:inline-block;background:var(--blue-dark);color:var(--blue);
+  border:1px solid var(--blue);border-radius:999px;
+  font-size:.72rem;font-weight:700;padding:2px 10px;margin-left:8px;
+  vertical-align:middle;
+}
+
+/* ==========================================================
+   4. BARRES DE PROGRESSION
+   ========================================================== */
+.progress{
+  background:var(--bg-softer);
+  border-radius:999px;height:12px;overflow:hidden;
+  border:1px solid var(--border);
+}
+.progress > div{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#1fae62,var(--green));
+  border-radius:999px;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.progress-label{
+  display:flex;justify-content:space-between;
+  font-size:.82rem;color:var(--txt-dim);margin:10px 0 6px;
+}
+.celebrate{
+  display:none;text-align:center;font-weight:700;
+  color:var(--green);margin-top:10px;
+  animation:pop .5s ease;
+}
+.celebrate.on{display:block}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+
+/* ==========================================================
+   5. ACCORDÉON JOURS
+   ========================================================== */
+.day{
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:12px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:border-color .3s;
+}
+.day.handball{border-color:var(--blue)}
+.day.done{border-color:var(--green)}
+.day-head{
+  width:100%;display:flex;align-items:center;gap:12px;
+  background:transparent;border:none;color:var(--txt);
+  padding:16px;text-align:left;
+}
+.day-head:hover{background:var(--bg-softer)}
+.day-head .day-name{font-weight:700;font-size:1.05rem;flex:1}
+.day-head .kcal{font-size:.78rem;color:var(--txt-dim);display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.3;text-align:right}
+.day-head .chev{transition:transform .3s;color:var(--txt-dim)}
+.day.open .chev{transform:rotate(180deg)}
+.day-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .45s ease;
+  padding:0 14px;
+}
+.day.open .day-body{padding-bottom:14px}
+.day .progress{height:8px;margin:0 16px 0}
+.day .day-prog-wrap{padding:0 16px 14px}
+.day-msg{font-size:.85rem;font-weight:700;color:var(--green);padding:0 16px 12px;display:none}
+.day-msg.on{display:block;animation:pop .4s ease}
+
+/* ==========================================================
+   6. REPAS
+   ========================================================== */
+.meal{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--bg-softer);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;margin-top:10px;
+  transition:background .3s,border-color .3s;
+}
+.meal.checked{
+  background:var(--green-dark);
+  border-color:var(--green);
+}
+.meal input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;
+  width:22px;height:22px;flex:0 0 22px;margin-top:2px;
+  border:2px solid var(--txt-dim);border-radius:7px;
+  background:transparent;cursor:pointer;position:relative;
+  transition:all .2s;
+}
+.meal input[type=checkbox]:checked{
+  background:var(--green);border-color:var(--green);
+}
+.meal input[type=checkbox]:checked::after{
+  content:"✓";position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:#04120a;font-weight:900;font-size:.9rem;
+}
+.meal-info{flex:1}
+.meal-type{
+  font-size:.72rem;text-transform:uppercase;letter-spacing:1px;
+  color:var(--txt-dim);font-weight:700;
+}
+.meal.checked .meal-type{color:var(--green)}
+.meal-name{font-weight:700;margin:2px 0 4px}
+.meal ul{list-style:none;font-size:.86rem;color:var(--txt-dim)}
+.meal ul li::before{content:"– "}
+.qr{color:var(--green)}
+.qh{color:#c792ea}
+.meal ul li .qr,.meal ul li .qh{white-space:nowrap}
+.meal ul li .qr b,.meal ul li .qh b{font-weight:700}
+.meal ul li .qr{margin-right:6px}
+.meal-meta{flex-wrap:wrap}
+.who{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin:8px 0 2px}
+.portions{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.portions label{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--txt-dim)}
+.portions input{width:90px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);padding:8px;font-family:inherit}
+.portions input:focus{border-color:var(--green);outline:none}
+.meal-note{font-size:.8rem;color:var(--txt-dim);font-style:italic;margin-top:6px}
+.meal-meta{
+  display:flex;gap:12px;margin-top:6px;
+  font-size:.78rem;color:var(--txt-dim);
+}
+.meal-meta span{background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:2px 10px}
+.meal.checked .meal-meta span{border-color:var(--green);color:var(--green)}
+
+/* Petit-déjeuner : deux versions côte à côte */
+.pdj-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.pdj-split > div{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px}
+.pdj-split b{font-size:.86rem}
+@media (max-width:600px){.pdj-split{grid-template-columns:1fr}}
+
+/* ==========================================================
+   7. LISTES DE COURSES & TABLEAUX
+   ========================================================== */
+.rayon h3{
+  color:var(--green);font-size:.95rem;
+  margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px;
+}
+.rayon ul{list-style:none}
+.rayon li{
+  padding:6px 0;border-bottom:1px dashed var(--border);
+  font-size:.92rem;display:flex;justify-content:space-between;gap:10px;
+}
+.rayon li span:last-child{color:var(--txt-dim);white-space:nowrap}
+
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--border)}
+th{color:var(--txt-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:1px}
+td input[type=number],td input[type=text]{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;color:var(--txt);padding:8px;font-family:inherit;
+}
+td input:focus{border-color:var(--green);outline:none}
+
+/* Batch cooking : étapes */
+.step{
+  display:flex;gap:14px;margin-top:14px;align-items:flex-start;
+}
+.step .num{
+  flex:0 0 34px;height:34px;border-radius:50%;
+  background:var(--green-dark);color:var(--green);
+  border:1px solid var(--green);
+  display:flex;align-items:center;justify-content:center;font-weight:800;
+}
+.step b{display:block}
+.step small{color:var(--txt-dim)}
+
+/* Boutons d'action (sauvegarde) */
+.btn{
+  background:var(--bg-softer);color:var(--txt);
+  border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;font-weight:600;font-size:.9rem;
+  margin:6px 8px 0 0;transition:all .2s;
+}
+.btn:hover{border-color:var(--green);color:var(--green)}
+.btn.primary{background:var(--green);color:#04120a;border-color:var(--green)}
+
+
+/* Onglet Rotations */
+.rot{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+.rot.current{border-color:var(--green)}
+.rot > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:16px;font-weight:700;font-size:1.05rem}
+.rot > summary::-webkit-details-marker{display:none}
+.rot > summary:hover{background:var(--bg-softer)}
+.rot > summary .chev{margin-left:auto;color:var(--txt-dim);transition:transform .3s}
+.rot[open] > summary .chev{transform:rotate(180deg)}
+.badge-cur{background:var(--green-dark);color:var(--green);border:1px solid var(--green);border-radius:999px;font-size:.72rem;font-weight:700;padding:2px 10px}
+.rot-body{padding:0 16px 16px}
+.rot-body h3{font-size:.95rem;color:var(--green);margin:18px 0 6px;text-transform:uppercase;letter-spacing:1px}
+.rot-body h3 small{color:var(--txt-dim);text-transform:none;letter-spacing:0;font-weight:500}
+.rot-body td:first-child{font-weight:700;white-space:nowrap}
+.rot-body td{font-size:.85rem;vertical-align:top}
+.rot-body tr.we td{color:var(--txt-dim)}
+
+/* ==========================================================
+   8. RESPONSIVE & ACCESSIBILITÉ
+   ========================================================== */
+@media (max-width:600px){
+  .card{padding:16px}
+  .meal{flex-wrap:wrap}
+  .day-head{padding:14px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mon Plan <span>Alimentaire</span></h1>
+  <p>4 semaines · simple · économique · 10 min par repas</p>
+</header>
+
+<nav id="nav"></nav>
+
+<main id="main"></main>
+
+<script>
+/* ==========================================================
+   DONNÉES — Base des repas (programme partagé, quantités en poids cru)
+   Chaque ingrédient : [nom affiché, quantité affichée, clé produit, quantité pour les courses]
+   ========================================================== */
+const MEALS = {
+  /* --- Petits-déjeuners (selon le jour) --- */
+  pdj_lun:{nom:"Petits suisses, muesli et fraises",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Muesli sans avoine","30 g","muesli",30],["Fraises","100 g","fraises",100],["Miel","1 c. à café","miel",1]],kcal:330,prot:15,tps:"3 min",note:"Tout mélanger dans un bol."},
+  pdj_mar:{nom:"Tartine jambon de dinde, tomate & petit suisse",ing:[["Pain complet","1 tranche (40 g)","pain",40],["Jambon de dinde","3 tranches","jambon",3],["Tomate","120 g (1 tomate)","tomates",120],["Petit suisse","60 g (1 pot)","psuisse",60]],kcal:270,prot:26,tps:"3 min",note:"Tomate en rondelles sur le pain."},
+  pdj_mer:{nom:"Bol muesli, petits suisses et banane",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Muesli sans avoine","30 g","muesli",30],["Banane","1/2","banane",0.5],["Myrtilles","30 g","myrtilles",30]],kcal:345,prot:16,tps:"3 min"},
+  pdj_jeu:{nom:"Tartine petits suisses et jambon de poulet",ing:[["Pain complet","2 tranches (80 g)","pain",80],["Petits suisses","60 g (1 pot)","psuisse",60],["Jambon de poulet","2 tranches","jambon",2],["Concombre","100 g","concombre",100]],kcal:335,prot:24,tps:"3 min",note:"Petit suisse battu en guise de beurre."},
+  pdj_ven:{nom:"Petits suisses, fruits rouges et muesli",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Fraises","80 g","fraises",80],["Myrtilles","50 g","myrtilles",50],["Muesli sans avoine","30 g","muesli",30]],kcal:330,prot:16,tps:"3 min"},
+  pdj_sam:{nom:"Pain complet, jambon de dinde, petit suisse & orange pressée",ing:[["Pain complet","1 tranche (40 g)","pain",40],["Jambon de dinde","3 tranches","jambon",3],["Petit suisse","60 g (1 pot)","psuisse",60],["Orange à presser","1","orange",1]],kcal:310,prot:26,tps:"5 min"},
+  pdj_dim:{nom:"Bol petits suisses, muesli, fruits frais & miel",ing:[["Petits suisses","150 g (2-3 pots)","psuisse",150],["Muesli sans avoine","30 g","muesli",30],["Fruits frais","100 g","fruits",100],["Miel","1 c. à café","miel",1]],kcal:350,prot:15,tps:"3 min",note:"Fruits frais sur le dessus."},
+
+  /* --- Petits-déjeuners de Raph : alternance habituelle / tartines --- */
+  pdj_raph:{nom:"Café, petits suisses, flocons d'avoine et muesli",ing:[["Café","1 tasse","cafe",1],["Miel (selon l'envie)","1 c. à café, parfois","miel",0.5],["Petits suisses","180 g (3 pots)","psuisse",180],["Flocons d'avoine","40 g","avoine",40],["Muesli","15 g","muesli",15]],kcal:415,prot:21,tps:"3 min",note:"Ton petit-déjeuner habituel.",fixe:true},
+  pdj_raph_tartines:{nom:"Café, pain complet, jambon & fromage frais",ing:[["Café","1 tasse","cafe",1],["Pain de mie complet","2 tranches (≈ 80 g)","pain",80],["Jambon","2 tranches","jambon",2],["Fromage frais à tartiner","1 carré (≈ 20 g)","fromage_frais",20]],kcal:305,prot:20,tps:"3 min",note:"2 tranches de pain de mie complet, 2 tranches de jambon et 1 carré de fromage frais à tartiner.",fixe:true},
+
+  /* --- Collations (selon le jour) --- */
+  col_lun:{nom:"Pomme et 6 amandes",ing:[["Pomme","1 (≈ 150 g)","pomme",1],["Amandes","6 (≈ 7 g)","amandes",7]],kcal:120,prot:2,tps:"2 min",note:"À croquer lentement, avec un grand verre d'eau."},
+  col_mar:{nom:"Petits suisses et ananas",ing:[["Petits suisses","120 g (2 pots)","psuisse",120],["Ananas frais","100 g","ananas",100],["Cannelle","1 pincée","cannelle",1]],kcal:180,prot:10,tps:"2 min"},
+  col_mer:{nom:"2 clémentines",ing:[["Clémentines","2","clem",2]],kcal:60,prot:1,tps:"1 min",note:"Riches en vitamine C."},
+  col_jeu:{nom:"Petits suisses et poire",ing:[["Petits suisses","120 g (2 pots)","psuisse",120],["Poire","1","poire",1]],kcal:215,prot:10,tps:"2 min",note:"Poire coupée en dés."},
+  col_ven:{nom:"Petit plaisir : 2 carrés de chocolat noir",ing:[["Chocolat noir 70 % minimum","2 carrés (≈ 10 g)","chocolat",10],["Thé ou infusion","1 tasse","the",1]],kcal:55,prot:1,tps:"1 min"},
+  col_sam:{nom:"Petits suisses et mangue",ing:[["Petits suisses","120 g (2 pots)","psuisse",120],["Mangue","100 g","mangue",100]],kcal:190,prot:10,tps:"2 min"},
+  col_dim:{nom:"Une grappe de raisin ou 2 clémentines",ing:[["Raisin ou clémentines","1 petite grappe (≈ 100 g) ou 2","raisin",100]],kcal:70,prot:1,tps:"1 min",note:"Selon la saison."},
+  col_raph_fruit_amandes:{nom:"Fruit + amandes",ing:[["Fruit de saison","1 (≈ 150 g)","pomme",1],["Amandes","6 (≈ 7 g)","amandes",7]],kcal:120,prot:2,tps:"2 min",note:"Les jours où Raph prend les petits suisses au petit-déjeuner : 1 fruit et 6 amandes."},
+
+  /* --- Déjeuners --- */
+  l_dinde_persil:{nom:"Dinde à l'ail et au persil, courgettes, riz basmati",ing:[["Escalope de dinde crue","150 g","dinde",150],["Courgettes","250 g","courgettes",250],["Riz basmati cru","50 g","riz",50],["Ail","1 gousse","ail",1],["Persil frais","1 poignée","herbe",1],["Citron","1/2","citron",0.5],["Huile d'olive","1 c. à soupe","huile",1]],kcal:480,prot:40,tps:"10 min*",note:"Poêler la dinde en lamelles avec l'ail et le persil, sauter les courgettes, finir au citron.",raph:{dinde:250,courgettes:200,riz:90}},
+  l_dinde_paprika:{nom:"Dinde au paprika, poivrons, boulgour",ing:[["Escalope de dinde crue","190 g","dinde",190],["Poivrons rouge et jaune","250 g","poivrons",250],["Boulgour cru","50 g","boulgour",50],["Paprika fumé","1 c. à café","paprika",1]],kcal:445,prot:50,tps:"10 min*",note:"Poivrons rôtis au four, dinde poêlée au paprika fumé.",raph:{dinde:250,poivrons:200,boulgour:90},plus:[["Huile d'olive (en plus)","1 c. à soupe","huile_plus",1]]},
+  l_saumon_aneth:{nom:"Saumon à l'aneth, brocolis, pâtes complètes",ing:[["Pavé de saumon cru","160 g","saumon",160],["Brocolis","200 g","brocolis",200],["Pâtes complètes crues","55 g","pates",55],["Petits suisses (sauce)","40 g","psuisse",40],["Citron","1/2","citron",0.5],["Aneth frais","quelques brins","herbe",1]],kcal:635,prot:48,tps:"10 min*",note:"Sauce : petit suisse + citron + aneth. Brocolis à la vapeur.",raph:{saumon:180,brocolis:200,pates:80,psuisse:40}},
+  l_steak:{nom:"Steak haché 5 %, haricots verts, pommes de terre au four",ing:[["Steak haché 5 % cru","180 g","steak",180],["Haricots verts","200 g","hv",200],["Pommes de terre","200 g","pdt",200],["Moutarde","1 c. à café","moutarde",1],["Herbes de Provence","1 pincée","herbesprov",1]],kcal:455,prot:44,tps:"10 min*",note:"Pommes de terre au four aux herbes, haricots verts persillés.",raph:{steak:250,hv:200,pdt:300},plus:[["Huile d'olive (en plus)","1 c. à soupe","huile_plus",1]]},
+  l_poulet_curry:{nom:"Poulet au curry, courgettes, quinoa",ing:[["Blanc de poulet cru","190 g","poulet",190],["Courgettes","250 g","courgettes",250],["Quinoa cru","50 g","quinoa",50],["Curry","1 c. à café","curry",1],["Lait de coco léger","1 c. à soupe","coco",1]],kcal:450,prot:54,tps:"10 min*",note:"Courgettes poêlées, poulet mijoté au curry et au lait de coco.",raph:{poulet:250,courgettes:200,quinoa:90}},
+  l_saumon_grille:{nom:"Saumon grillé, brocolis, boulgour au citron",ing:[["Pavé de saumon cru","160 g","saumon",160],["Brocolis","200 g","brocolis",200],["Boulgour cru","50 g","boulgour",50],["Ail","1 gousse","ail",1],["Citron (zeste et jus)","1/2","citron",0.5],["Persil frais","1 poignée","herbe",1]],kcal:570,prot:44,tps:"10 min*",raph:{saumon:180,brocolis:200,boulgour:80}},
+  l_dinde_roti:{nom:"Dinde rôtie, légumes du soleil, pommes de terre",ing:[["Dinde crue","190 g","dinde",190],["Courgettes","150 g","courgettes",150],["Poivrons","150 g","poivrons",150],["Pommes de terre grenaille","200 g","pdt",200],["Herbes de Provence","1 pincée","herbesprov",1]],kcal:430,prot:49,tps:"10 min*",note:"Tout rôtir au four avec les herbes de Provence.",raph:{dinde:250,courgettes:100,poivrons:100,pdt:350},plus:[["Huile d'olive (en plus)","1 c. à soupe","huile_plus",1]]},
+  l_plaisir:{nom:"🎉 Repas plaisir — libre !",ing:[["🍕 Pizza","1 individuelle (26-30 cm) + salade verte 150 g","",0],["🍔 Fast food","1 burger simple (poulet ou steak haché), petites frites ≈ 100 g ou salade, 1 seule sauce","",0],["🧀 Raclette","120 g de fromage (4 tranches), 250 g de pommes de terre, 60 g de jambon, 200 g de salade et cornichons","",0],["🍣 Sushis","10 pièces sushis et makis, 1 bol de soupe miso, edamame ou algues 100 g","",0],["🥞 Galettes et crêpes","1 à 2 galettes complètes, salade 100 g, 1 crêpe sucrée nature","",0],["Règles","Salade ou légumes d'abord · une seule assiette, sans se resservir · un seul extra (entrée, dessert ou verre)","",0]],kcal:1000,prot:0,tps:"—",note:"Un seul repas plaisir par semaine. Il remplace le déjeuner du samedi : tu reprends ton menu normalement au repas suivant, sans sauter de repas pour compenser."},
+
+  /* --- Dîners --- */
+  d_cabillaud:{nom:"Cabillaud vapeur, haricots verts, pommes de terre",ing:[["Cabillaud cru","180 g","cabillaud",180],["Haricots verts","200 g","hv",200],["Pommes de terre","200 g (2 petites)","pdt",200],["Aneth frais","quelques brins","herbe",1],["Citron","1/2","citron",0.5]],kcal:375,prot:40,tps:"10 min*",note:"Cuisson vapeur pour le poisson et les haricots verts.",raph:{cabillaud:250,hv:200,pdt:300},plus:[["Huile d'olive (en plus)","1 c. à soupe","huile_plus",1]]},
+  d_quinoa_thon:{nom:"Salade de quinoa au thon",ing:[["Thon naturel","1 boîte (≈ 110 g)","thon",1],["Quinoa cru","40 g","quinoa",40],["Concombre","150 g","concombre",150],["Tomates","150 g","tomates",150],["Menthe fraîche","quelques feuilles","herbe",1],["Citron","1/2","citron",0.5],["Huile d'olive","1 c. à café","huile",0.33]],kcal:350,prot:35,tps:"8 min*",note:"Quinoa cuit au batch, tiédi puis mélangé aux crudités.",raph:{thon:[1.5,"1 1/2 boîte (≈ 165 g)"],quinoa:80,concombre:100,tomates:100,huile:[1,"1 c. à soupe"]}},
+  d_dinde_courg:{nom:"Dinde, courgettes poêlées, feta et salade de tomates",ing:[["Escalope de dinde crue","100 g","dinde",100],["Courgettes","200 g","courgettes",200],["Tomates","150 g","tomates",150],["Feta","30 g","feta",30],["Basilic frais","quelques feuilles","herbe",1]],kcal:245,prot:30,tps:"10 min*",note:"Courgettes fondantes à la poêle, dinde du batch, feta émiettée sur les tomates.",raph:{dinde:220,courgettes:200,tomates:150},plus:[["Riz basmati cru","70 g","riz",70]]},
+  d_wok_poulet:{nom:"Wok de poulet aux poivrons et blé",ing:[["Blanc de poulet cru","140 g","poulet",140],["Poivrons","200 g","poivrons",200],["Blé cru","50 g","ble",50],["Sauce soja allégée","1 c. à soupe","soja",1],["Gingembre frais","1 morceau (2 cm)","gingembre",1]],kcal:390,prot:41,tps:"10 min*",note:"Poulet en lamelles sauté avec les poivrons, la sauce soja et le gingembre ; blé du batch.",raph:{poulet:220,poivrons:200,ble:80},plus:[["Huile d'olive (en plus)","1 c. à soupe","huile_plus",1]]},
+  d_colin:{nom:"Colin, tomates provençales, riz",ing:[["Colin cru","180 g","colin",180],["Tomates","250 g","tomates",250],["Riz basmati cru","40 g","riz",40],["Ail","1 gousse","ail",1],["Thym","quelques brins","herbe",1]],kcal:325,prot:36,tps:"10 min*",note:"Tomates cuites au four à l'ail et au thym.",raph:{colin:250,tomates:250,riz:90},plus:[["Huile d'olive (en plus)","1 c. à soupe","huile_plus",1]]},
+  d_pates_thon:{nom:"Salade de pâtes froides au thon",ing:[["Thon naturel","1 boîte (≈ 110 g)","thon",1],["Pâtes crues","45 g","pates",45],["Concombre","150 g","concombre",150],["Tomates cerises","100 g","tomates",100],["Basilic frais","quelques feuilles","herbe",1],["Vinaigrette légère","1 c. à soupe","vinaigrette",1]],kcal:350,prot:35,tps:"8 min*",raph:{thon:[1.5,"1 1/2 boîte (≈ 165 g)"],pates:90,concombre:100,tomates:100,vinaigrette:[1.5,"1 1/2 c. à soupe"]}},
+  d_salade_poulet:{nom:"Salade composée poulet, blé et crudités",ing:[["Blanc de poulet cru","100 g","poulet",100],["Blé cru","40 g","ble",40],["Concombre","100 g","concombre",100],["Tomates","150 g","tomates",150],["Parmesan","30 g","parmesan",30],["Vinaigrette moutarde","1 c. à soupe","vinaigrette",1]],kcal:440,prot:40,tps:"8 min*",raph:{poulet:200,ble:70,concombre:100,tomates:100}}
+};
+
+/* ==========================================================
+   DONNÉES — Catalogue produits (courses & budget)
+   u : g (kc, pr, prix pour 100 g / au kg) · pc/tr/boite/cs/cc (par unité) · herb/pm (sans total)
+   sc : sensibilité du produit à la variation de portion (0 = jamais ; < 1 = peu ; > 1 = plus que la moyenne)
+   Pour passer à un objectif plus haut, on privilégie les féculents (sc élevé) plutôt que la viande et les légumes (sc faible).
+   ========================================================== */
+const CAT = {
+  cabillaud:{nom:"Cabillaud",rayon:"Surgelés",u:"g",prix:12,kc:80,pr:18,sc:0.4},
+  colin:{nom:"Colin",rayon:"Surgelés",u:"g",prix:11,kc:75,pr:17,sc:0.4},
+  saumon:{nom:"Pavés de saumon",rayon:"Poissonnerie",u:"g",prix:18,kc:200,pr:20,sc:0.4},
+  dinde:{nom:"Escalopes de dinde",rayon:"Boucherie / Volaille",u:"g",prix:10,kc:105,pr:22,sc:0.4},
+  poulet:{nom:"Blanc de poulet",rayon:"Boucherie / Volaille",u:"g",prix:9,kc:110,pr:23,sc:0.4},
+  steak:{nom:"Steak haché 5 %",rayon:"Boucherie / Volaille",u:"g",prix:11,kc:125,pr:20,sc:0.4},
+  jambon:{nom:"Jambon de dinde / poulet",rayon:"Boucherie / Volaille",u:"tr",prix:0.3,kc:28,pr:5.5,sc:0.4,fmt:"tranches"},
+  thon:{nom:"Thon naturel (boîte ≈ 110 g)",rayon:"Épicerie",u:"boite",prix:1.4,kc:120,pr:27,sc:0.4,fmt:"boites"},
+  pdt:{nom:"Pommes de terre",rayon:"Fruits & Légumes",u:"g",prix:1.6,kc:80,pr:2,sc:0.7},
+  riz:{nom:"Riz basmati",rayon:"Épicerie",u:"g",prix:3,kc:350,pr:8,sc:1.6},
+  boulgour:{nom:"Boulgour",rayon:"Épicerie",u:"g",prix:2.5,kc:340,pr:12,sc:1.6},
+  quinoa:{nom:"Quinoa",rayon:"Épicerie",u:"g",prix:6,kc:360,pr:14,sc:1.6},
+  ble:{nom:"Blé",rayon:"Épicerie",u:"g",prix:2,kc:340,pr:12,sc:1.6},
+  pates:{nom:"Pâtes complètes",rayon:"Épicerie",u:"g",prix:2.2,kc:350,pr:13,sc:1.6},
+  courgettes:{nom:"Courgettes",rayon:"Fruits & Légumes",u:"g",prix:2.8,kc:17,pr:1.2,sc:0.2},
+  poivrons:{nom:"Poivrons",rayon:"Fruits & Légumes",u:"g",prix:4.5,kc:28,pr:1,sc:0.2},
+  brocolis:{nom:"Brocolis",rayon:"Fruits & Légumes",u:"g",prix:3,kc:34,pr:2.8,sc:0.2},
+  hv:{nom:"Haricots verts",rayon:"Surgelés",u:"g",prix:3,kc:31,pr:1.8,sc:0.2},
+  tomates:{nom:"Tomates (dont cerises)",rayon:"Fruits & Légumes",u:"g",prix:3.5,kc:18,pr:0.9,sc:0.2},
+  concombre:{nom:"Concombre",rayon:"Fruits & Légumes",u:"g",prix:2.5,kc:12,pr:0.6,sc:0.2},
+  psuisse:{nom:"Petits suisses",rayon:"Crèmerie",u:"g",prix:6,kc:110,pr:8,sc:0.6,fmt:"pots60"},
+  fromage_frais:{nom:"Fromage frais à tartiner",rayon:"Crèmerie",u:"g",prix:12,kc:240,pr:6,sc:0,fmt:"carre20"},
+  feta:{nom:"Feta",rayon:"Crèmerie",u:"g",prix:9,kc:260,pr:14,sc:0},
+  parmesan:{nom:"Parmesan",rayon:"Crèmerie",u:"g",prix:14,kc:400,pr:35,sc:0},
+  avoine:{nom:"Flocons d'avoine",rayon:"Épicerie",u:"g",prix:2.5,kc:370,pr:13,sc:0},
+  huile_plus:{nom:"Huile d'olive",rayon:"Épicerie",u:"cs",prix:0,kc:90,pr:0,sc:0},
+  cafe:{nom:"Café",rayon:"Épicerie",u:"pm",prix:0,kc:2,pr:0,sc:0},
+  muesli:{nom:"Muesli sans flocons d'avoine",rayon:"Épicerie",u:"g",prix:6,kc:370,pr:9,sc:1},
+  pain:{nom:"Pain complet",rayon:"Épicerie",u:"g",prix:3.5,kc:250,pr:10,sc:1.6,fmt:"tr40"},
+  fraises:{nom:"Fraises",rayon:"Fruits & Légumes",u:"g",prix:7,kc:33,pr:0.7,sc:0.5},
+  myrtilles:{nom:"Myrtilles",rayon:"Fruits & Légumes",u:"g",prix:14,kc:57,pr:0.7,sc:0.5},
+  banane:{nom:"Bananes",rayon:"Fruits & Légumes",u:"pc",prix:0.25,kc:105,pr:1.3,sc:0.5,fmt:"n"},
+  pomme:{nom:"Pommes",rayon:"Fruits & Légumes",u:"pc",prix:0.3,kc:78,pr:0.4,sc:0.5,fmt:"n"},
+  poire:{nom:"Poires",rayon:"Fruits & Légumes",u:"pc",prix:0.4,kc:85,pr:0.6,sc:0.5,fmt:"n"},
+  ananas:{nom:"Ananas frais",rayon:"Fruits & Légumes",u:"g",prix:2.5,kc:50,pr:0.5,sc:0.5},
+  mangue:{nom:"Mangue",rayon:"Fruits & Légumes",u:"g",prix:5,kc:60,pr:0.8,sc:0.5},
+  clem:{nom:"Clémentines",rayon:"Fruits & Légumes",u:"pc",prix:0.2,kc:30,pr:0.5,sc:0.5,fmt:"n"},
+  raisin:{nom:"Raisin",rayon:"Fruits & Légumes",u:"g",prix:4,kc:70,pr:0.7,sc:0.5},
+  orange:{nom:"Oranges (à presser)",rayon:"Fruits & Légumes",u:"pc",prix:0.4,kc:60,pr:1,sc:0.5,fmt:"n"},
+  fruits:{nom:"Fruits frais de saison",rayon:"Fruits & Légumes",u:"g",prix:4,kc:50,pr:0.6,sc:0.5},
+  chocolat:{nom:"Chocolat noir 70 %",rayon:"Épicerie",u:"g",prix:14,kc:560,pr:7,sc:1},
+  amandes:{nom:"Amandes",rayon:"Épicerie",u:"g",prix:12,kc:600,pr:21,sc:0.5},
+  citron:{nom:"Citrons",rayon:"Fruits & Légumes",u:"pc",prix:0.4,kc:16,pr:0.3,sc:0,fmt:"n"},
+  ail:{nom:"Ail",rayon:"Fruits & Légumes",u:"pc",prix:0.1,kc:4,pr:0.2,sc:0,fmt:"gousses"},
+  huile:{nom:"Huile d'olive",rayon:"Épicerie",u:"cs",prix:0,kc:90,pr:0,sc:0},
+  miel:{nom:"Miel",rayon:"Épicerie",u:"cc",prix:0,kc:22,pr:0,sc:0},
+  soja:{nom:"Sauce soja allégée",rayon:"Épicerie",u:"cs",prix:0,kc:8,pr:0.5,sc:0},
+  vinaigrette:{nom:"Vinaigrette légère",rayon:"Épicerie",u:"cs",prix:0,kc:35,pr:0,sc:0},
+  coco:{nom:"Lait de coco léger",rayon:"Épicerie",u:"cs",prix:0,kc:12,pr:0,sc:0},
+  moutarde:{nom:"Moutarde",rayon:"Épicerie",u:"cc",prix:0,kc:5,pr:0,sc:0},
+  curry:{nom:"Curry",rayon:"Épicerie",u:"cc",prix:0,kc:6,pr:0,sc:0},
+  paprika:{nom:"Paprika fumé",rayon:"Épicerie",u:"cc",prix:0,kc:6,pr:0,sc:0},
+  herbesprov:{nom:"Herbes de Provence",rayon:"Épicerie",u:"pm",prix:0,kc:1,pr:0,sc:0},
+  cannelle:{nom:"Cannelle",rayon:"Épicerie",u:"pm",prix:0,kc:0,pr:0,sc:0},
+  herbe:{nom:"Herbes fraîches",rayon:"Fruits & Légumes",u:"herb",prix:0,kc:2,pr:0,sc:0},
+  gingembre:{nom:"Gingembre frais",rayon:"Fruits & Légumes",u:"herb",prix:0,kc:2,pr:0,sc:0},
+  the:{nom:"Thé ou infusion",rayon:"Épicerie",u:"pm",prix:0,kc:0,pr:0,sc:0}
+};
+
+/* ==========================================================
+   DONNÉES — Structure des 4 semaines
+   Les 4 semaines réutilisent uniquement les déjeuners et dîners du
+   programme (la semaine 1 est le programme d'origine). Petit-déjeuner et
+   collation dépendent du jour de la semaine (BREAKFAST_ROT / COLLATION_ROT).
+   Samedi midi = repas plaisir.
+   ========================================================== */
+const JOURS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const TYPES = ["Petit-déjeuner","Déjeuner","Collation","Dîner"];
+function jour(dej,din){return ["pdj",dej,"col",din];}
+
+const WEEK_CONTENT = [
+  /* ---- SEMAINE 1 ---- */
+  [
+    jour("l_dinde_persil","d_cabillaud"),
+    jour("l_dinde_paprika","d_quinoa_thon"),
+    jour("l_saumon_aneth","d_dinde_courg"),
+    jour("l_steak","d_wok_poulet"),
+    jour("l_poulet_curry","d_colin"),
+    jour("l_plaisir","d_pates_thon"),
+    jour("l_dinde_roti","d_salade_poulet")
+  ],
+  /* ---- SEMAINE 2 ---- */
+  [
+    jour("l_poulet_curry","d_dinde_courg"),
+    jour("l_saumon_grille","d_wok_poulet"),
+    jour("l_dinde_roti","d_colin"),
+    jour("l_dinde_persil","d_pates_thon"),
+    jour("l_dinde_paprika","d_salade_poulet"),
+    jour("l_plaisir","d_cabillaud"),
+    jour("l_steak","d_quinoa_thon")
+  ],
+  /* ---- SEMAINE 3 ---- */
+  [
+    jour("l_saumon_aneth","d_dinde_courg"),
+    jour("l_steak","d_wok_poulet"),
+    jour("l_poulet_curry","d_colin"),
+    jour("l_saumon_grille","d_pates_thon"),
+    jour("l_dinde_roti","d_salade_poulet"),
+    jour("l_plaisir","d_cabillaud"),
+    jour("l_dinde_paprika","d_quinoa_thon")
+  ],
+  /* ---- SEMAINE 4 ---- */
+  [
+    jour("l_dinde_roti","d_salade_poulet"),
+    jour("l_dinde_persil","d_cabillaud"),
+    jour("l_dinde_paprika","d_quinoa_thon"),
+    jour("l_saumon_aneth","d_dinde_courg"),
+    jour("l_steak","d_wok_poulet"),
+    jour("l_plaisir","d_colin"),
+    jour("l_saumon_grille","d_pates_thon")
+  ]
+];
+const HANDBALL = []; /* handball en pause (récupération post-méniscectomie) */
+
+/* Petit-déjeuner : Raph alterne son habituel et les tartines ; Hannah suit BREAKFAST_ROT */
+const PDJ_RAPH = "pdj_raph"; /* compatibilité avec les anciennes données */
+const PDJ_RAPH_ROT = ["pdj_raph","pdj_raph_tartines","pdj_raph","pdj_raph_tartines","pdj_raph","pdj_raph_tartines","pdj_raph"];
+const BREAKFAST_ROT = ["pdj_lun", "pdj_mar", "pdj_mer", "pdj_jeu", "pdj_ven", "pdj_sam", "pdj_dim"];
+const COLLATION_ROT = ["col_lun", "col_mar", "col_mer", "col_jeu", "col_ven", "col_sam", "col_dim"];
+function collationRaphId(d){
+  return PDJ_RAPH_ROT[d] === "pdj_raph" ? "col_raph_fruit_amandes" : COLLATION_ROT[d];
+}
+
+/* ==========================================================
+   ROTATIONS — 3 cycles de 4 semaines, à partir du même vivier
+   de repas déjà équilibré. Chaque rotation réordonne les mêmes
+   4 semaines et mélange les jours de semaine (lundi→vendredi),
+   samedi (plaisir + plat asiatique) et dimanche (batch) restant
+   des repères fixes. Change de rotation via le bouton dans
+   l'onglet Accueil, sans avoir à redemander un nouveau plan.
+   ========================================================== */
+const ROTATION_WEEK_ORDER = [ [0,1,2,3], [1,2,3,0], [2,3,0,1] ];
+const ROTATION_DAY_PERM   = [ [0,1,2,3,4,5,6], [2,3,4,0,1,5,6], [4,0,1,2,3,5,6] ];
+const NB_ROTATIONS = ROTATION_WEEK_ORDER.length;
+
+function buildSemaines(r){
+  const perm = ROTATION_DAY_PERM[r];
+  return ROTATION_WEEK_ORDER[r].map(origIdx=>{
+    const week = perm.map(origDay => WEEK_CONTENT[origIdx][origDay].slice());
+    week.forEach((day,d)=>{ day[0] = BREAKFAST_ROT[d]; day[2] = COLLATION_ROT[d]; });
+    return week;
+  });
+}
+function buildListes(r){
+  /* Les courses doivent suivre exactement les jours réellement affichés dans la rotation. */
+  return buildSemaines(r).map(buildListeSemaine);
+}
+
+/* ==========================================================
+   PORTIONS, COURSES & BUDGET
+   Chaque personne choisit son objectif kcal/jour : les quantités sont
+   mises à l'échelle (F = moi, FA = l'autre personne). Les courses et le
+   budget additionnent les deux portions.
+   ========================================================== */
+const CIBLE_MOI_DEFAUT = 1900, CIBLE_AUTRE_DEFAUT = 1200;
+let F = 1, FA = 1, R = 1;   /* F : facteur de Raph (= R) · FA : Hannah · R : repère de Raph = objectif / 1 900 */
+const RAYONS = ["Boucherie / Volaille","Poissonnerie","Fruits & Légumes","Épicerie","Crèmerie","Surgelés"];
+
+function echelle(c,f){ return c.sc ? 1+(f-1)*c.sc : 1; }
+function arrondi(v){ return v>=100 ? Math.round(v/10)*10 : Math.round(v/5)*5; }
+function arrondiU(c,v){
+  if(c.u==="g") return arrondi(v);
+  if(c.u==="tr") return Math.max(1,Math.round(v));
+  if(c.u==="boite"||c.u==="pc") return Math.max(0.5,Math.round(v*2)/2);
+  return v;
+}
+/* Un repas "fixe" (les deux petits-déjeuners de Raph) n'est pas mis à l'échelle en unités ; les quantités en grammes suivent le repère R. */
+function fm(id,f){
+  if(MEALS[id].fixe) return 1;
+  if(id.startsWith("col_")) return f===1 ? 1 : 1+(f-1)*1.8;   /* goûter plus consistant */
+  return f;
+}
+/* Compléments propres à Raph (champ plus du repas) */
+function extrasRaph(id){ return (MEALS[id].plus||[]).map(x=>[x[0],x[1],x[2],x[3],true]); }
+/* Ingrédients d'un repas pour une personne. Pour Raph : quantités imposées (champ raph) + compléments */
+function ingPour(id,qui){
+  if(qui!=="raph") return MEALS[id].ing;
+  const ov = MEALS[id].raph || {};
+  return MEALS[id].ing.map(i=>{
+    const o = ov[i[2]];
+    if(o===undefined) return i;
+    return Array.isArray(o) ? [i[0], o[1], i[2], o[0], true] : [i[0], o+" g", i[2], o, true];
+  }).concat(extrasRaph(id));
+}
+/* Raph : quantités imposées (5e élément = true). Les quantités en grammes suivent le repère R (objectif / 1 900) */
+function montant(i,f){
+  if(i[4]){ const c0 = CAT[i[2]]; return (c0.u==="g" && R!==1) ? arrondiU(c0,i[3]*R) : i[3]; }
+  const c = CAT[i[2]], s = echelle(c,f); return s===1 ? i[3] : arrondiU(c,i[3]*s); }
+function frac(v){ const e = Math.floor(v), r = v-e; if(r<0.25) return String(e); if(r<0.75) return (e?e+" ":"")+"1/2"; return String(e+1); }
+function virg(x){ return String(x).replace(".",","); }
+
+/* Quantité affichée dans un repas pour le facteur f (quantité du programme si le produit ne change pas) */
+function qteAff(i,f){
+  if(!i[2]) return i[1];
+  const c = CAT[i[2]];
+  if(i[4]) return (c.u==="g" && R!==1) ? montant(i,f)+" g" : i[1];
+  if(echelle(c,f)===1) return i[1];
+  const a = montant(i,f);
+  if(i[2]==="raisin") return a+" g (ou "+Math.max(1,Math.round(a/50))+" clémentines)";
+  if(c.fmt==="pots60") return a+" g (≈ "+virg(Math.round(a/30)/2)+" pots)";
+  if(c.fmt==="tr40") return a+" g (≈ "+virg(Math.round(a/20)/2)+" tranches)";
+  if(c.u==="tr") return a+" tranche"+(a>1?"s":"");
+  if(c.u==="boite") return frac(a)+" boîte"+(a>1?"s":"")+" (≈ "+Math.round(a*110/5)*5+" g)";
+  if(c.u==="pc") return frac(a);
+  return a+" g";
+}
+
+/* Légumes : quantité par personne (« 200 g/p ») */
+const LEGUMES = ["courgettes","poivrons","brocolis","hv","tomates","concombre"];
+function qteP(i,t){ return LEGUMES.includes(i[2]) ? t.replace(/(\d+ g)/,"$1/p") : t; }
+
+/* Calories et protéines d'un repas pour le facteur f */
+function nutriRepas(id,f,qui){
+  if(id==="l_plaisir") return {kcal:1000,prot:0};
+  let kc = 0, pr = 0;
+  ingPour(id,qui).forEach(i=>{
+    if(!i[2]) return;
+    const c = CAT[i[2]], a = montant(i,fm(id,f)), k = c.u==="g" ? a/100 : a;
+    kc += c.kc*k; pr += c.pr*k;
+  });
+  return {kcal:Math.round(kc/5)*5, prot:Math.round(pr)};
+}
+/* Moyenne par jour sur les 4 semaines (hors repas plaisir, ou repas plaisir compris si pl) */
+function moyJour(champ,f,qui,pl){
+  let t = 0, n = 0;
+  WEEK_CONTENT.forEach(w=>w.forEach((day,d)=>{
+    [qui==="raph"?PDJ_RAPH_ROT[d]:BREAKFAST_ROT[d],day[1],qui==="raph"?collationRaphId(d):COLLATION_ROT[d],day[3]].forEach(id=>{
+      if(id!=="l_plaisir" || pl) t += nutriRepas(id,f,qui)[champ];
+    });
+    n++;
+  }));
+  return t/n;
+}
+/* Facteur de portion qui se rapproche le plus de l'objectif kcal/jour */
+function facteurPour(cible,qui){
+  /* proche du programme d'origine (à ± 60 kcal) : on garde exactement ses quantités */
+  if(Math.abs(moyJour("kcal",1,qui)-cible)<=60) return 1;
+  let best = 1, bd = 1e9;
+  for(let f=0.6; f<=3.0001; f+=0.01){
+    const dd = Math.abs(moyJour("kcal",f,qui)-cible);
+    if(dd<bd){ bd = dd; best = f; }
+  }
+  return Math.round(best*100)/100;
+}
+
+/* Totaux d'une semaine : portion de chacun additionnée */
+function totauxSemaine(week){
+  const tot = {};
+  week.forEach((day,d)=>{
+    [[PDJ_RAPH_ROT[d],F,"raph"],[BREAKFAST_ROT[d],FA,"h"]].forEach(([pdj,f,qui])=>{
+      [pdj, day[1], qui==="raph"?collationRaphId(d):COLLATION_ROT[d], day[3]].forEach(id=>{
+        ingPour(id,qui).forEach(i=>{ if(i[2]) tot[i[2]] = (tot[i[2]]||0) + montant(i,fm(id,f)); });
+      });
+    });
+  });
+  return tot;
+}
+function fmtQte(c,q){
+  if(c.fmt==="pots60") return "≈ "+Math.ceil(q/60)+" pots (60 g)";
+  if(c.fmt==="tr40") return "≈ "+Math.ceil(q/40)+" tranches";
+  if(c.fmt==="carre20") return "≈ "+Math.ceil(q/20)+" carré"+(Math.ceil(q/20)>1?"s":"")+" (20 g)";
+  if(c.fmt==="tranches") return Math.ceil(q)+" tranches";
+  if(c.fmt==="boites") return Math.ceil(q)+" boîte"+(Math.ceil(q)>1?"s":"");
+  if(c.fmt==="gousses") return Math.ceil(q)+" gousses";
+  if(c.fmt==="n") return String(Math.ceil(q));
+  if(q>=1000) return "≈ "+(q/1000).toFixed(1).replace(".",",")+" kg";
+  return "≈ "+arrondi(q)+" g";
+}
+function buildListeSemaine(week){
+  const tot = totauxSemaine(week), liste = {};
+  RAYONS.forEach(r=>liste[r]=[]);
+  const placard = new Set();
+  Object.keys(tot).forEach(k=>{
+    const c = CAT[k];
+    if(c.u==="herb") return;
+    if(c.u==="cs"||c.u==="cc"||c.u==="pm"){ placard.add(c.nom.toLowerCase().replace("provence","Provence")); return; }
+    liste[c.rayon].push([c.nom, fmtQte(c,tot[k])]);
+  });
+  RAYONS.forEach(r=>liste[r].sort((a,b)=>a[0].localeCompare(b[0],"fr")));
+  /* herbes fraîches : on liste les variétés réellement utilisées */
+  const noms = new Set();
+  week.forEach((day,d)=>[BREAKFAST_ROT[d],day[1],COLLATION_ROT[d],day[3]].forEach(id=>
+    MEALS[id].ing.forEach(i=>{ if(i[2] && CAT[i[2]].u==="herb") noms.add(i[0].replace(/ frais$/,"").replace(/ fraîche$/,"").toLowerCase()); })));
+  if(noms.size) liste["Fruits & Légumes"].push(["Herbes fraîches & gingembre", [...noms].join(", ")]);
+  if(placard.size) liste["Épicerie"].push(["Fond de placard", [...placard].join(", ")]);
+  RAYONS.forEach(r=>{ if(!liste[r].length) delete liste[r]; });
+  return liste;
+}
+function majPortions(){
+  R = Math.min(1.6,Math.max(0.6,state.cible/1900));
+  F = R;
+  FA = facteurPour(state.cibleAutre);
+}
+
+/* Budget : prix moyens en supermarché discount (estimation), moyenne des 4 semaines */
+function fourchette(x){ return "≈ "+Math.max(1,Math.floor(x*0.92))+"-"+Math.ceil(x*1.08)+" €"; }
+function calcBudget(){
+  const par = {};
+  RAYONS.forEach(r=>par[r]=0);
+  WEEK_CONTENT.forEach(w=>{
+    const tot = totauxSemaine(w);
+    Object.keys(tot).forEach(k=>{
+      const c = CAT[k];
+      if(!c.prix) return;
+      par[c.rayon] += (c.u==="g" ? tot[k]/1000*c.prix : tot[k]*c.prix)/WEEK_CONTENT.length;
+    });
+  });
+  return {
+    lignes: RAYONS.filter(r=>par[r]>0).map(r=>[r, fourchette(par[r])]),
+    total: fourchette(Object.values(par).reduce((a,b)=>a+b,0))
+  };
+}
+
+/* ==========================================================
+   DONNÉES — Batch cooking du dimanche (~45 min, pour 2)
+   ========================================================== */
+const BATCH = [
+  ["Lancer les féculents","Riz basmati, boulgour, quinoa, blé et pâtes complètes (selon la semaine) dans des casseroles séparées, en poids cru. Tout cuit pendant que tu fais le reste.","0 → 25 min"],
+  ["Four : dinde, poulet & poivrons","Escalopes de dinde et blancs de poulet sur une plaque avec paprika fumé, curry ou herbes de Provence et un filet d'huile. Poivrons et courgettes en lamelles sur une seconde plaque. Four 200 °C.","0 → 25 min"],
+  ["Steak haché & pommes de terre","Steaks hachés à la poêle ou au four. Pommes de terre en morceaux au four avec les herbes, ou à la vapeur.","10 → 30 min"],
+  ["Légumes vapeur","Brocolis, haricots verts et courgettes à la vapeur ou à la poêle (croquants, ils se réchauffent mieux). Les tomates provençales se font le jour même au four.","25 → 40 min"],
+  ["Portionner viande & légumes","Répartir dans des boîtes individuelles (un coup de feutre pour la date suffit). 3-4 jours au frigo, le reste au congélateur.","40 → 45 min"],
+  ["Poisson : à part, le jour même","Saumon, cabillaud et colin se cuisinent frais le jour J (poêle, vapeur ou four, 5-10 min) — ils ne se batch-cook pas bien à l'avance. Les salades (quinoa-thon, pâtes froides, blé-poulet) s'assemblent le jour même avec les féculents déjà cuits.","le jour même"]
+];
+
+/* ==========================================================
+   ÉTAT — sauvegarde localStorage
+   state.checks : { "s0d1m2": true }
+   state.suivi  : { a:[{poids,taille,note}×4] }
+   ========================================================== */
+const KEY = "planAlimentaireV1";
+let state = {checks:{}, suivi:{a:[{},{},{},{}], b:[{},{},{},{}]}, rotation:0, cible:CIBLE_MOI_DEFAUT, cibleAutre:CIBLE_AUTRE_DEFAUT};
+try{
+  const saved = JSON.parse(localStorage.getItem(KEY));
+  if(saved){
+    if(saved.checks) state.checks = saved.checks;
+    /* Migration : l'ancienne version stockait le suivi sous forme de tableau simple */
+    if(Array.isArray(saved.suivi)) state.suivi.a = saved.suivi;
+    else if(saved.suivi) state.suivi = Object.assign(state.suivi, saved.suivi);
+    if(Number.isInteger(saved.rotation) && saved.rotation>=0 && saved.rotation<NB_ROTATIONS) state.rotation = saved.rotation;
+    if(Number.isFinite(saved.cible) && saved.cible>=1000 && saved.cible<=3500) state.cible = saved.cible;
+    if(Number.isFinite(saved.cibleAutre) && saved.cibleAutre>=1000 && saved.cibleAutre<=3500) state.cibleAutre = saved.cibleAutre;
+  }
+}catch(e){ /* localStorage indisponible : le site marche quand même, sans sauvegarde */ }
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* Semaines/courses actives, dérivées de la rotation en cours */
+let SEMAINES = buildSemaines(state.rotation);
+majPortions();
+let LISTES = buildListes(state.rotation);
+
+</script>
+<script>
+/* ==========================================================
+   RENDU — construction du site
+   ========================================================== */
+const nav = document.getElementById("nav");
+const main = document.getElementById("main");
+
+const PAGES = [
+  {id:"accueil",label:"🏠 Accueil"},
+  {id:"s0",label:"Semaine 1"},{id:"s1",label:"Semaine 2"},
+  {id:"s2",label:"Semaine 3"},{id:"s3",label:"Semaine 4"},
+  {id:"rotations",label:"🔄 Rotations"},
+  {id:"courses",label:"🛒 Courses"},
+  {id:"batch",label:"🍳 Batch cooking"},
+  {id:"suivi",label:"📈 Suivi"}
+];
+
+/* Calories totales d'un jour (hors repas plaisir) */
+function kcalJour(mealIds,f,qui,d){
+  return mealIds.reduce((t,id,m)=>{
+    if(id==="l_plaisir") return t;
+    const mealId = m===0 && qui==="raph" ? PDJ_RAPH_ROT[d] : (m===2 && qui==="raph" ? collationRaphId(d) : id);
+    return t + nutriRepas(mealId, f, qui).kcal;
+  }, 0);
+}
+
+/* --- Page Accueil --- */
+function pageAccueil(){
+  return `
+  <section class="card">
+    <h2><span class="dot">●</span> Tes objectifs</h2>
+    <div class="stats">
+      <div class="stat"><b>99 kg</b><small>→ objectif 85-90 kg</small></div>
+      <div class="stat"><b>≈ ${(Math.round(moyJour("kcal",F,"raph",true)/50)*50).toLocaleString("fr-FR")}</b><small>kcal / jour pour Raph (repas plaisir compris)</small></div>
+      <div class="stat"><b>≈ ${Math.round(moyJour("prot",F,"raph",true)/5)*5} g</b><small>protéines / jour</small></div>
+      <div class="stat"><b>Dès lundi</b><small>Kiné 🦵 (post-méniscectomie)</small></div>
+      <div class="stat"><b>${calcBudget().total}</b><small>Budget / semaine (vous deux)</small></div>
+    </div>
+    <div class="warn">⚠️ <span>Quantités en poids cru, avant cuisson : pèse tes ingrédients avant de les cuire, comme sur la liste de courses. Chaque repas affiche les quantités et les kcal de Raph et de Hannah.</span></div>
+  </section>
+  <section class="card">
+    <h2><span class="dot">●</span> Rotation de menus</h2>
+    <p class="muted">Rotation <b>${state.rotation+1}/${NB_ROTATIONS}</b> en cours. Au bout de 4 semaines, change de rotation pour repartir sur un enchaînement différent des mêmes repas équilibrés — sans avoir à redemander un nouveau plan.</p>
+    <button class="btn primary" data-rotate="1">🔄 Passer à la rotation suivante</button>
+  </section>
+  <section class="card">
+    <h2><span class="dot">●</span> Comment ça marche</h2>
+    <p class="muted">
+      • <b>Petit-déjeuner</b> : Raph alterne son petit-déjeuner habituel (café, 3 petits suisses, flocons d'avoine, un peu de muesli) avec 2 tranches de pain de mie complet, 2 tranches de jambon, 1 carré de fromage frais et son café ; Hannah garde sa rotation habituelle.<br>
+      • <b>Collation de 16 h 30</b> : pour Raph, les jours avec petits suisses au petit-déjeuner = 1 fruit + 6 amandes ; les autres jours, la collation prévue au menu. Hannah garde sa rotation habituelle.<br>
+      • <b>Poisson</b> : saumon, cabillaud et colin reviennent plusieurs fois par semaine, cuisinés le jour même.<br>
+      • <b>Quantités en poids cru</b> : tout est pesé avant cuisson. Les légumes sont indiqués par personne (<b>/p</b>, par exemple 200 g/p).<br>
+      • <b>Handball en pause</b> le temps de la récupération (méniscectomie) — repas normaux tous les jours.<br>
+      • <b>Samedi midi</b> : repas plaisir 🎉 au choix (pizza, fast food, raclette, sushis ou galettes), avec des portions repères.<br>
+      • <b>Dimanche</b> : batch cooking de ~45 min qui prépare presque toute la semaine (le poisson se cuisine à part, le jour même).<br>
+      • Coche chaque repas terminé : il devient vert et tout est sauvegardé automatiquement.<br>
+      • Les repas marqués <b>10 min*</b> se réchauffent ou s'assemblent en 10 min grâce au batch cooking.
+    </p>
+  </section>
+  <section class="card">
+    <h2>💾 Sauvegarde</h2>
+    <p class="muted">Tes coches et ton suivi sont enregistrés automatiquement <b>sur cet appareil</b>. Pour partager ou sécuriser tes données : exporte le fichier de sauvegarde et importe-le sur un autre appareil (ou garde-le dans un cloud type Drive).</p>
+    <button class="btn primary" id="btnExport">⬇️ Exporter la sauvegarde</button>
+    <button class="btn" id="btnImport">⬆️ Importer une sauvegarde</button>
+    <input type="file" id="fileImport" accept=".json" hidden>
+  </section>
+  <section class="card">
+    <h2><span class="dot">●</span> Progression globale</h2>
+    <div class="progress-label"><span>Repas cochés sur les 4 semaines</span><span id="globalPct">0 %</span></div>
+    <div class="progress"><div id="globalBar"></div></div>
+  </section>`;
+}
+
+/* --- Un ingrédient --- */
+function ingSolo(id,f){
+  return i=>`<li>${i[0]} — <b>${qteP(i,qteAff(i,fm(id,f)))}</b></li>`;
+}
+function ingHTML(id){
+  const rl = ingPour(id,"raph");
+  return (i,n)=>{
+    const a = qteP(i,qteAff(rl[n],fm(id,F))), b = qteP(i,qteAff(i,fm(id,FA)));
+    if(a===b) return `<li>${i[0]} — <b>${a}</b></li>`;
+    return `<li>${i[0]} — <span class="qr">Raph <b>${a}</b></span> <span class="qh">Hannah <b>${b}</b></span></li>`;
+  };
+}
+function extrasHTML(id){
+  return extrasRaph(id).map(i=>`<li>${i[0]} — <span class="qr">Raph <b>${i[1]}</b></span></li>`).join("");
+}
+
+/* --- Un repas --- */
+function mealHTML(w,d,m,id){
+  const meal = MEALS[id];
+  const key = `s${w}d${d}m${m}`;
+  const checked = state.checks[key] ? "checked" : "";
+  const kcalChips = id==="l_plaisir"
+    ? `<span>🔥 ~1000 kcal</span>`
+    : `<span class="qr">🔥 Raph ${nutriRepas(id,F,"raph").kcal} kcal</span><span class="qh">🔥 Hannah ${nutriRepas(id,FA).kcal} kcal</span>`;
+
+  /* Petit-déjeuner : Raph et Hannah n'ont pas le même */
+  if(m===0){
+    const pdjRaphId = PDJ_RAPH_ROT[d];
+    const rm = MEALS[pdjRaphId];
+    return `
+  <div class="meal ${checked?'checked':''}" id="card-${key}">
+    <input type="checkbox" data-key="${key}" data-w="${w}" data-d="${d}" ${checked}
+           aria-label="Marquer ${TYPES[m]} comme terminé">
+    <div class="meal-info">
+      <div class="meal-type">${TYPES[m]}</div>
+      <div class="who qr">Raph</div>
+      <div class="meal-name">${rm.nom}</div>
+      <ul>${rm.ing.map(ingSolo(pdjRaphId,F)).join("")}</ul>
+      <p class="meal-note">${rm.note}</p>
+      <div class="who qh">Hannah</div>
+      <div class="meal-name">${meal.nom}</div>
+      <ul>${meal.ing.map(ingSolo(id,FA)).join("")}</ul>
+      ${meal.note?`<p class="meal-note">${meal.note}</p>`:""}
+      <div class="meal-meta"><span class="qr">🔥 Raph ${nutriRepas(pdjRaphId,F,"raph").kcal} kcal</span><span class="qh">🔥 Hannah ${nutriRepas(id,FA).kcal} kcal</span><span>⏱ ${meal.tps}</span></div>
+    </div>
+  </div>`;
+  }
+  /* Collation : Raph a une collation différente les jours où son petit-déjeuner contient des petits suisses */
+  if(m===2){
+    const colRaphId = collationRaphId(d);
+    const cm = MEALS[colRaphId];
+    return `
+  <div class="meal ${checked?'checked':''}" id="card-${key}">
+    <input type="checkbox" data-key="${key}" data-w="${w}" data-d="${d}" ${checked}
+           aria-label="Marquer ${TYPES[m]} comme terminé">
+    <div class="meal-info">
+      <div class="meal-type">${TYPES[m]}</div>
+      <div class="who qr">Raph</div>
+      <div class="meal-name">${cm.nom}</div>
+      <ul>${cm.ing.map(ingSolo(colRaphId,F)).join("")}</ul>
+      ${cm.note?`<p class="meal-note">${cm.note}</p>`:""}
+      <div class="who qh">Hannah</div>
+      <div class="meal-name">${meal.nom}</div>
+      <ul>${meal.ing.map(ingSolo(id,FA)).join("")}</ul>
+      ${meal.note?`<p class="meal-note">${meal.note}</p>`:""}
+      <div class="meal-meta"><span class="qr">🔥 Raph ${nutriRepas(colRaphId,F,"raph").kcal} kcal</span><span class="qh">🔥 Hannah ${nutriRepas(id,FA).kcal} kcal</span><span>⏱ ${meal.tps}</span></div>
+    </div>
+  </div>`;
+  }
+  return `
+  <div class="meal ${checked?'checked':''}" id="card-${key}">
+    <input type="checkbox" data-key="${key}" data-w="${w}" data-d="${d}" ${checked}
+           aria-label="Marquer ${TYPES[m]} comme terminé">
+    <div class="meal-info">
+      <div class="meal-type">${TYPES[m]}</div>
+      <div class="meal-name">${meal.nom}</div>
+      <ul>${meal.ing.map(ingHTML(id)).join("")}${extrasHTML(id)}</ul>
+      ${meal.note?`<p class="meal-note">${meal.note}</p>`:""}
+      <div class="meal-meta">${kcalChips}<span>⏱ ${meal.tps}</span></div>
+    </div>
+  </div>`;
+}
+
+/* --- Une semaine --- */
+function pageSemaine(w){
+  let html = `
+  <section class="card">
+    <h2><span class="dot">●</span> Semaine ${w+1}</h2>
+    <div class="progress-label"><span>Progression de la semaine</span><span id="wpct-${w}">0 %</span></div>
+    <div class="progress"><div id="wbar-${w}"></div></div>
+    <div class="celebrate" id="wmsg-${w}">🏆 Semaine terminée !</div>
+  </section>`;
+  SEMAINES[w].forEach((meals,d)=>{
+    const hb = HANDBALL.includes(d);
+    const kjR = kcalJour(meals,F,"raph",d), kjH = kcalJour(meals,FA,"h",d);
+    html += `
+    <div class="day ${hb?'handball':''}" id="day-${w}-${d}">
+      <button class="day-head" data-toggle="${w}-${d}" aria-expanded="false">
+        <span class="day-name">${JOURS[d]}${hb?'<span class="badge-hb">🤾 Handball</span>':''}</span>
+        <span class="kcal"><span class="qr">Raph ≈${kjR} kcal</span><span class="qh">Hannah ≈${kjH} kcal</span>${meals.includes("l_plaisir")?"<span>+ 🎉 repas plaisir</span>":""}</span>
+        <span class="chev">▼</span>
+      </button>
+      <div class="day-prog-wrap">
+        <div class="progress"><div id="dbar-${w}-${d}"></div></div>
+      </div>
+      <div class="day-msg" id="dmsg-${w}-${d}">🎉 Journée terminée</div>
+      <div class="day-body">
+        ${meals.map((id,m)=>mealHTML(w,d,m,id)).join("")}
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+/* --- Rotations : aperçu des 3 cycles de 4 semaines --- */
+function pageRotations(){
+  const nomCourt = id => MEALS[id].nom;
+  let html = `<section class="card">
+    <h2><span class="dot">●</span> Les ${NB_ROTATIONS} rotations</h2>
+    <p class="muted">Chaque rotation réutilise les mêmes repas du programme, mais change l'ordre des semaines et des jours (lundi → vendredi). Le samedi midi (repas plaisir) et le dimanche (batch cooking) restent des repères fixes. Le petit-déjeuner alterne pour Raph entre son petit-déjeuner habituel et les tartines jambon/fromage frais ; Hannah garde sa rotation par jour.</p>
+  </section>`;
+  for(let r=0; r<NB_ROTATIONS; r++){
+    const sem = buildSemaines(r);
+    const cur = r===state.rotation;
+    html += `<details class="rot ${cur?'current':''}" ${cur?'open':''}>
+      <summary>Rotation ${r+1}${cur?' <span class="badge-cur">En cours</span>':''}<span class="chev">▼</span></summary>
+      <div class="rot-body">
+        <p class="muted">Ordre des semaines du plan de base : ${ROTATION_WEEK_ORDER[r].map(i=>i+1).join(" → ")}</p>`;
+    sem.forEach((week,w)=>{
+      html += `<h3>Semaine ${w+1} <small>(base : semaine ${ROTATION_WEEK_ORDER[r][w]+1})</small></h3>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th></th><th>Déjeuner</th><th>Dîner</th></tr></thead>
+          <tbody>${week.map((meals,d)=>`<tr class="${d>=5?'we':''}"><td>${JOURS[d]}</td><td>${nomCourt(meals[1])}</td><td>${nomCourt(meals[3])}</td></tr>`).join("")}</tbody>
+        </table></div>`;
+    });
+    html += `</div></details>`;
+  }
+  return html;
+}
+
+/* --- Listes de courses --- */
+function pageCourses(){
+  const B = calcBudget();
+  let html = `<section class="card"><h2><span class="dot">●</span> Listes de courses</h2>
+  <p class="muted">Classées par rayons, calculées pour vos deux portions à partir des repas réels de chaque semaine.</p></section>`;
+  LISTES.forEach((liste,w)=>{
+    html += `<section class="card"><h2>🛒 Semaine ${w+1}</h2>`;
+    for(const [rayon,items] of Object.entries(liste)){
+      html += `<div class="rayon"><h3>${rayon}</h3><ul>` +
+        items.map(i=>`<li><span>${i[0]}</span><span>${i[1]}</span></li>`).join("") +
+        `</ul></div>`;
+    }
+    html += `</section>`;
+  });
+  html += `<section class="card"><h2>💶 Budget estimé par semaine (vous deux)</h2>
+    <ul class="rayon" style="list-style:none">` +
+    B.lignes.map(b=>`<li style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)"><span>${b[0]}</span><b>${b[1]}</b></li>`).join("") +
+    `</ul>
+    <div class="stats" style="margin-top:14px">
+      <div class="stat"><b>${B.total}</b><small>Total / semaine (vous deux)</small></div>
+    </div>
+    <div class="warn">⚠️ <span>Estimation en supermarché discount / marques distributeur, moyenne des 4 semaines. Le repas plaisir du samedi et le fond de placard ne sont pas comptés.</span></div>
+  </section>`;
+  return html;
+}
+
+/* --- Batch cooking --- */
+function pageBatch(){
+  return `<section class="card">
+    <h2>🍳 Batch cooking du dimanche <span class="muted">(~30-35 min)</span></h2>
+    <p class="muted">Une seule session de cuisine prépare les féculents, viandes et légumes de la semaine. Ensuite, chaque repas = assembler + réchauffer en moins de 10 minutes.</p>
+    ${BATCH.map((s,i)=>`
+    <div class="step">
+      <div class="num">${i+1}</div>
+      <div><b>${s[0]}</b><span>${s[1]}</span><br><small>⏱ ${s[2]}</small></div>
+    </div>`).join("")}
+    <div class="warn">⚠️ <span>Conservation : 3-4 jours max au réfrigérateur dans des boîtes fermées. Congèle les portions de jeudi/vendredi et sors-les la veille.</span></div>
+  </section>`;
+}
+
+/* --- Tableau de suivi --- */
+function tableSuivi(qui,label,placeholder){
+  let rows = "";
+  for(let w=0; w<4; w++){
+    const s = state.suivi[qui][w] || {};
+    rows += `<tr>
+      <td><b>S${w+1}</b></td>
+      <td><input type="number" step="0.1" min="0" placeholder="kg" data-suivi="poids" data-qui="${qui}" data-w="${w}" value="${s.poids??""}"></td>
+      <td><input type="number" step="0.5" min="0" placeholder="cm" data-suivi="taille" data-qui="${qui}" data-w="${w}" value="${s.taille??""}"></td>
+      <td><input type="text" placeholder="${placeholder}" data-suivi="note" data-qui="${qui}" data-w="${w}" value="${s.note??""}"></td>
+    </tr>`;
+  }
+  return `<h2 style="margin-top:8px">${label}</h2>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th></th><th>Poids (kg)</th><th>Tour de taille (cm)</th><th>Remarques</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+function pageSuivi(){
+  return `<section class="card">
+    <h2>📈 Tableau de suivi</h2>
+    <p class="muted">Pèse-toi une fois par semaine, le même jour, le matin à jeun. Tout est sauvegardé automatiquement sur cet appareil.</p>
+    ${tableSuivi("a","Suivi","Énergie, faim, handball…")}
+    <div class="stats" style="margin-top:16px" id="suiviStats"></div>
+  </section>`;
+}
+
+/* ==========================================================
+   CONSTRUCTION DU DOM
+   ========================================================== */
+PAGES.forEach((p,i)=>{
+  const b = document.createElement("button");
+  b.textContent = p.label;
+  b.dataset.page = p.id;
+  if(i===0) b.classList.add("active");
+  nav.appendChild(b);
+
+  const sec = document.createElement("div");
+  sec.className = "page" + (i===0?" visible":"");
+  sec.id = "page-" + p.id;
+  main.appendChild(sec);
+});
+
+document.getElementById("page-accueil").innerHTML = pageAccueil();
+for(let w=0; w<4; w++) document.getElementById("page-s"+w).innerHTML = pageSemaine(w);
+document.getElementById("page-rotations").innerHTML = pageRotations();
+document.getElementById("page-courses").innerHTML = pageCourses();
+document.getElementById("page-batch").innerHTML = pageBatch();
+document.getElementById("page-suivi").innerHTML = pageSuivi();
+
+/* ==========================================================
+   INTERACTIONS
+   ========================================================== */
+
+/* Navigation entre onglets */
+nav.addEventListener("click",e=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  nav.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===btn));
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("visible"));
+  document.getElementById("page-"+btn.dataset.page).classList.add("visible");
+  window.scrollTo({top:0});
+});
+
+/* Re-génère toutes les pages (rotation ou portions modifiées) */
+function rerenderAll(){
+  LISTES = buildListes(state.rotation);
+  document.getElementById("page-accueil").innerHTML = pageAccueil();
+  for(let w=0; w<4; w++) document.getElementById("page-s"+w).innerHTML = pageSemaine(w);
+  document.getElementById("page-rotations").innerHTML = pageRotations();
+  document.getElementById("page-courses").innerHTML = pageCourses();
+  for(let w=0;w<4;w++) for(let d=0;d<7;d++) refresh(w,d);
+}
+
+/* Objectif kcal / jour : mise à jour des portions */
+main.addEventListener("change",e=>{
+  const el = e.target;
+  if(!el.matches("[data-cible]")) return;
+  let v = parseInt(el.value,10);
+  if(!Number.isFinite(v)) v = el.dataset.cible==="cible" ? CIBLE_MOI_DEFAUT : CIBLE_AUTRE_DEFAUT;
+  state[el.dataset.cible] = Math.min(3500,Math.max(1000,v));
+  save();
+  majPortions();
+  rerenderAll();
+});
+
+/* Changer de rotation de menus */
+main.addEventListener("click",e=>{
+  const btn = e.target.closest("[data-rotate]");
+  if(!btn) return;
+  const ok = confirm("Passer à la rotation suivante ? Tes coches de progression seront réinitialisées (ton suivi de poids est conservé).");
+  if(!ok) return;
+  state.rotation = (state.rotation+1) % NB_ROTATIONS;
+  state.checks = {};
+  save();
+  SEMAINES = buildSemaines(state.rotation);
+  rerenderAll();
+  window.scrollTo({top:0});
+});
+
+/* Accordéon des jours */
+main.addEventListener("click",e=>{
+  const head = e.target.closest("[data-toggle]");
+  if(!head) return;
+  const day = head.parentElement;
+  const body = day.querySelector(".day-body");
+  const open = day.classList.toggle("open");
+  head.setAttribute("aria-expanded", open);
+  body.style.maxHeight = open ? body.scrollHeight + "px" : "0";
+});
+
+/* Cases à cocher des repas + champs du suivi */
+main.addEventListener("change",e=>{
+  const el = e.target;
+  if(el.matches("input[type=checkbox][data-key]")){
+    const key = el.dataset.key;
+    if(el.checked) state.checks[key] = true;
+    else delete state.checks[key];
+    document.getElementById("card-"+key).classList.toggle("checked", el.checked);
+    save();
+    refresh(+el.dataset.w, +el.dataset.d);
+    const body = el.closest(".day-body");
+    if(body && body.parentElement.classList.contains("open"))
+      body.style.maxHeight = body.scrollHeight + "px";
+  }
+  if(el.matches("[data-suivi]")){
+    majChampSuivi(el);
+    majSuivi();
+  }
+});
+/* Sauvegarde aussi pendant la frappe dans le suivi */
+main.addEventListener("input",e=>{
+  if(e.target.matches("[data-suivi]")) majChampSuivi(e.target);
+});
+function majChampSuivi(el){
+  const qui = el.dataset.qui, w = +el.dataset.w;
+  state.suivi[qui][w] = state.suivi[qui][w] || {};
+  state.suivi[qui][w][el.dataset.suivi] = el.value;
+  save();
+}
+
+/* ==========================================================
+   PROGRESSION — jour, semaine, global
+   ========================================================== */
+function compteJour(w,d){
+  let done = 0;
+  for(let m=0;m<4;m++) if(state.checks[`s${w}d${d}m${m}`]) done++;
+  return done;
+}
+function refresh(w,d){
+  const dj = compteJour(w,d);
+  document.getElementById(`dbar-${w}-${d}`).style.width = (dj/4*100)+"%";
+  document.getElementById(`dmsg-${w}-${d}`).classList.toggle("on", dj===4);
+  document.getElementById(`day-${w}-${d}`).classList.toggle("done", dj===4);
+
+  let ws = 0;
+  for(let j=0;j<7;j++) ws += compteJour(w,j);
+  const wpct = Math.round(ws/28*100);
+  document.getElementById(`wbar-${w}`).style.width = wpct+"%";
+  document.getElementById(`wpct-${w}`).textContent = wpct+" %";
+  document.getElementById(`wmsg-${w}`).classList.toggle("on", ws===28);
+
+  const total = Object.keys(state.checks).length;
+  const gpct = Math.round(total/112*100);
+  document.getElementById("globalBar").style.width = gpct+"%";
+  document.getElementById("globalPct").textContent = gpct+" %";
+}
+
+/* Statistiques du suivi (perte pour chacun) */
+function statPerte(qui,depart,objectif,emoji){
+  const poids = state.suivi[qui].map(s=>parseFloat(s&&s.poids)).filter(v=>!isNaN(v));
+  if(!poids.length) return `<div class="stat"><b>${emoji} —</b><small>Note un poids pour voir tes stats</small></div>`;
+  const dernier = poids[poids.length-1];
+  const perte = depart - dernier;
+  return `
+    <div class="stat"><b>${emoji} ${dernier} kg</b><small>Dernier poids noté</small></div>
+    <div class="stat"><b>${perte>=0?"-":"+"}${Math.abs(perte).toFixed(1)} kg</b><small>Depuis le départ (${depart} kg)</small></div>
+    <div class="stat"><b>${Math.max(0,dernier-objectif).toFixed(1)} kg</b><small>Restants vers ${objectif} kg</small></div>`;
+}
+function majSuivi(){
+  document.getElementById("suiviStats").innerHTML =
+    statPerte("a",105,87.5,"⚖️");
+}
+
+/* ==========================================================
+   SAUVEGARDE — export / import du fichier JSON
+   ========================================================== */
+document.getElementById("btnExport").addEventListener("click",()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const d = new Date().toISOString().slice(0,10);
+  a.download = `plan-alimentaire-sauvegarde-${d}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById("btnImport").addEventListener("click",()=>{
+  document.getElementById("fileImport").click();
+});
+document.getElementById("fileImport").addEventListener("change",e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const data = JSON.parse(r.result);
+      if(!data.checks && !data.suivi) throw new Error("format");
+      state = Object.assign({checks:{},suivi:{a:[{},{},{},{}],b:[{},{},{},{}]},rotation:0,cible:CIBLE_MOI_DEFAUT,cibleAutre:CIBLE_AUTRE_DEFAUT}, data);
+      save();
+      location.reload(); /* recharge la page avec les données importées */
+    }catch(err){
+      alert("Fichier de sauvegarde invalide.");
+    }
+  };
+  r.readAsText(f);
+});
+
+/* Initialisation : appliquer l'état sauvegardé */
+for(let w=0;w<4;w++) for(let d=0;d<7;d++) refresh(w,d);
+majSuivi();
+</script>
+<script>
+/* Enregistrement du service worker : rend le site installable et utilisable hors connexion */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(err=>console.warn("SW non enregistré :", err));
+  });
+}
+</script>
+</body>
+</html>
